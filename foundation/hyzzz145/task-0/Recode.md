@@ -10,9 +10,9 @@
 
 - 这是我的 Markdown
 
-![代码区](photo-0\1.png)
+![代码区](photo-0/1.png)
 
-![预览](photo-0\2.png)
+![预览](photo-0/2.png)
 
 *好像图片有点太大了*
 - 接着我在 vscode 的终端把我这个crazy-day.md 上传至 github learn-ai-hyzzz145 仓库上。
