@@ -1,6 +1,3 @@
-def a(a,b=12,*c):
-    print(a)
-    print(b)
-    print(c)
-
-a(1,2)
+a = input().split()
+print(type(a[0]))
+print(a[0]+a[1])
