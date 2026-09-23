@@ -58,6 +58,7 @@ class Character:
 
     def change_affinity(self, value):
         self.affinity += value
+        pause(0.5)
         print(f"{self.name} 的好感度变化 {value} -> 当前好感度：{self.affinity}")
 
     #查看好感度的函数
@@ -66,6 +67,7 @@ class Character:
         print(f"\n你问道：{self.name}，我们现在关系是什么样的？")
         pause(0.5)
         print(f"{self.name}：我和你的好感度目前是{self.affinity}哟。")
+        pause(2)
 
     def check_ending(self):
         if self.affinity >= 100:
@@ -115,6 +117,7 @@ class Game:
         pause(0.5)
         print("学姐：『这位新生？要不要来试试？』")
         pause(0.5)
+        print("====================")
         choice = input("1. 主动表现兴趣，拿起一只笔作画\n2. 表示抱歉，没兴趣，转身离开\n请选择：")
         if choice == "1":
             pause(0.2)
@@ -137,6 +140,7 @@ class Game:
         pause(0.5)
         print("小白：『呜呜……这题到底该怎么写呀？』")
         pause(0.5)
+        print("====================")
         choice = input("1. 主动帮她解题\n2. 敷衍几句，转身离开\n请选择：")
         if choice == '1':
             pause(0.2)
@@ -163,6 +167,7 @@ class Game:
         pause(0.5)
         print("姐姐：『你的代码思路很有趣呢，能给我讲讲你的实现方法吗？』")
         pause(0.5)
+        print("====================")
         choice = input("1. 缓缓低眉，毫不在意的开始解释\n2. 头也不抬，保持敲代码的状态\n请选择：")
         if choice == '1':
             pause(0.2)
@@ -214,8 +219,10 @@ class Game:
             #输入2----
             elif choice == '2':
                 print("你从身上掏出了：")
+                pause(0.4)
                 m = 1
                 for i in GIFT_EFFECTS.keys():
+                    pause(0.2)
                     print(f"{m}：{i}")
                     m += 1
                 gift = list(GIFT_EFFECTS.keys())[int(input("你选择了：（1~7）"))-1]
@@ -236,6 +243,8 @@ class Game:
 
             if self.current_target == self.characters["None"] or self.current_target.check_ending():
                 break
+
+            pause(1)
             
 
 

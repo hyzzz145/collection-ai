@@ -257,10 +257,3 @@ def main_battle_loop(
     #
     # TODO：双方回合完成后让 turn 增加 1，并根据 pause_seconds 调用 time.sleep()。
     # TODO：循环结束后调用 get_battle_result()，输出中文结果并返回 result。
-reslut = main_battle_loop(0.0001,20)
-if reslut == 'nabiya':
-    print("娜比娅胜利")
-elif reslut == 'nagato':
-    print("长门胜利")
-else:
-    print("平局")
