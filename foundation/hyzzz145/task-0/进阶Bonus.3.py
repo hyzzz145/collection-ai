@@ -8,8 +8,8 @@ def m(list):
         for j in range(len_1):
             b.append(list[j][i])
         c.append(b)
-        #b.clear()
-        b = []
+        b.clear()
+        #b = []
     return c
 a_1 = m(a)
 print(a_1)  
