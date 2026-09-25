@@ -82,19 +82,33 @@ class Pokemon():
         attack = max(0,attack - op_character.defend_value)
         if self.defend_rate:
             print(f"护盾吸收 {op_character.defend_rate}%")
-            attack *= (1 - op_character.defend_rate)
+            attack *= (100 - op_character.defend_rate)
             attack /= 100
         if is_dodge:
             attack = 0
         if op_character.is_fired:
-            print(f"{op_character.chinese} 受到 10 点额外烧伤")
+            print(f"{op_character.chinese} 受到 10 点额外烧伤 {3 - op_character.is_fired * 2}/2")
             attack += 10
             op_character.is_fired -= 0.5
+        if attack != 0:
+            if self.element_id == 2:
+                attack *= 1 + 0.1 * self.passive_skill()
+
         return attack
     #伤害扣除
     def reduce_hp(self,num:int,object:Pokemon):
+        #水被动
+        if num != 0 and object.element_id == 3:
+            object.passive_skill(num)
         object.hp -= num
         print(f"{object.chinese} 受到了 {num} 点伤害！剩余 HP：{object.hp}/{object.max_hp}")
+        #电被动
+        #由于技术问题，game 的实例就先用 a 表示了
+        if num != 0:
+            if object.element_id == 4:
+                pause(0.3)
+                object.passive_skill()
+
 
     #生命恢复
     def recover_hp(self,num:int):
@@ -159,6 +173,9 @@ class Pokemon():
             if skill_num == 1:
                 self.reduce_hp(self.attack(op_character,self.attack_value),op_character)
                 #烧伤
+                if random.random() <= 0.1:
+                    print(f"对方的 {op_character.chinese} 成功被烧伤")
+                    op_character.is_fired = 1
                 
             #蓄能爆炎
             if skill_num == 2:
@@ -166,7 +183,9 @@ class Pokemon():
                     op_character.add_dodge(20)
                     self.reduce_hp(3 * self.attack(op_character,self.attack_value),op_character)
                     #烧伤
-                    #if random.random() < 0.8:
+                    if random.random() < 0.8:
+                        print(f"对方的 {op_character.chinese} 成功被烧伤")
+                        op_character.is_fired = 1
                     self.flame_count = 0
                 else:
                     self.flame_count += 1
@@ -183,13 +202,29 @@ class WaterPokemon(Pokemon):
     element = 'water'
     element_id = 3
     element_chinese = '水属性'
+    def passive_skill(self,attack:int):
+        if random.random() <= 0.5:
+            pause(0.3)
+            print("水属性被动发动，伤害减免30%")
+            attack *= 0.7
+
 class FirePokemon(Pokemon):
     def __init__(self, name, hp, attack_value, defend_value, dodge_rate,chinese):
         super().__init__(name, hp, attack_value, defend_value, dodge_rate,chinese)
+        self.passive_skill_num = 0
     #类属性
     element = 'fire'
     element_id = 2
     element_chinese = '火属性'
+    
+    def passive_skill(self)->int:
+        pause(0.3)
+        print(f"{self.chinese} 被动启用")
+        if self.passive_skill_num <= 4:
+            self.passive_skill_num += 1
+        print(f"当前层数 （{self.passive_skill_num}/4）")
+        return self.passive_skill_num
+
 class GrassPokemon(Pokemon):
     def __init__(self, name, hp, attack_value, defend_value, dodge_rate,chinese):
         super().__init__(name, hp, attack_value, defend_value, dodge_rate,chinese)
@@ -197,15 +232,24 @@ class GrassPokemon(Pokemon):
     element = 'grass'
     element_id = 1
     element_chinese = '草属性'
+    def passive_skill(self):
+        print(f"{self.chinese} 回合触发草属性被动")
+        self.recover_hp(0.1 * self.max_hp)
 class ElectricPokemon(Pokemon):
     def __init__(self, name, hp, attack_value, defend_value, dodge_rate,chinese):
         super().__init__(name, hp, attack_value, defend_value, dodge_rate,chinese)
+        self.is_act = 0
     #类属性
     element = 'electric'
     element_id = 4
     element_chinese = '电属性'
+    def passive_skill(self):
+        print(f"{self.chinese} 触发电属性被动")
+        self.is_act = 1
+
 
 class Game():
+
     def __init__(self):
         pass
     def start(self):
@@ -223,7 +267,9 @@ class Game():
         self.player_paralyzed = []
         self.computere_paralyzed = []
         self.turn = 0
+        self.run = 1
         self.character_choice()
+        
 
     def character_choice(self):
         print("请选择 3 个宝可梦用于组成你的队伍：")
@@ -260,12 +306,71 @@ class Game():
                 return 'computer'
             else:
                 return False
-        while(True):
+        #显示函数
+        def show(pokemon_list:list,dizzy_list:list,paralyzed_list:list):
+            for i in range(3):
+                print(f"{i+1}.{pokemon_list[i].chinese}({pokemon_list[i].element_chinese})",end="  ")
+                #晕厥判定
+                if pokemon_list[i].is_dizzy:
+                    print("(已晕厥)")
+                    if not i in dizzy_list:
+                        dizzy_list.append(i)
+                elif i in dizzy_list:
+                    dizzy_list.remove(i)
+                #麻痹判定
+                elif pokemon_list[i].is_paralyzed:
+                    print("(已麻痹)")
+                else:
+                    print(f"({pokemon_list[i].hp}/{pokemon_list[i].max_hp})")
+                if pokemon_list[i].is_paralyzed:
+                    pokemon_list[i].is_paralyzed -= 0.25
+                    if not i in paralyzed_list:
+                        paralyzed_list.append(i)
+                elif i in paralyzed_list:
+                    paralyzed_list.remove(i)
+                pause(0.1)
+        #技能释放函数
+        #玩家
+        def player_skill(self):
+            print(f"你的 {self.player_current_pokemon.chinese} 的技能：")
+            pause(0.2)
+            print(f"1.{SKILL[self.player_current_pokemon.name][0]}")
+            pause(0.1)
+            print(f"2.{SKILL[self.player_current_pokemon.name][1]}")
+            pause(0.5)
+            self.skill_choice = int(input("选择一个技能进行攻击："))
+            print("=====你的回合=====")
+            pause(0.1)
+            print(f"{self.player_current_pokemon.chinese} 使用了 {SKILL[self.player_current_pokemon.name][self.skill_choice - 1]}！")
+            pause(0.3)
+            pause(0.1)
+            self.player_current_pokemon.skill_act(self.skill_choice,self.computere_current_pokemon)
+            pause(0.1)
+            print("")
+            pause(0.2)
+            if is_end(self):
+                self.run = 0
+        #人机
+        def computere_skill(self):
+            pause(0.1)
+            print(f"{self.computere_current_pokemon.chinese} 使用了 {SKILL[self.computere_current_pokemon.name][self.skill_choice - 1]}！")
+            self.computere_current_pokemon.skill_act(random.randint(1,2),self.player_current_pokemon)
+            pause(0.1)
+            print("")
+            pause(0.1)
+            print("")
+            if is_end(self):
+                self.run = 0
+
+        
+        while(self.run):
             self.turn += 1
             print(f"======{self.turn} Turn =====")
             pause(0.3)
             print("请选择你的宝可梦：")
             pause(0.2)
+            show(self.player_pokemon,self.player_dizzy,self.player_paralyzed)
+            '''
             for i in range(3):
                 print(f"{i+1}.{self.player_pokemon[i].chinese}({self.player_pokemon[i].element_chinese})",end="  ")
                 #玩家晕厥判定
@@ -278,24 +383,36 @@ class Game():
                 #玩家麻痹判定
                 elif self.player_pokemon[i].is_paralyzed:
                     print("(已麻痹)")
+                else:
+                    print(f"({self.player_pokemon[i].hp}/{self.player_pokemon[i].max_hp})")
+                if self.player_pokemon[i].is_paralyzed:
                     self.player_pokemon[i].is_paralyzed -= 0.25
                     if not i in self.player_paralyzed:
                         self.player_paralyzed.append(i)
                 elif i in self.player_paralyzed:
                     self.player_paralyzed.remove(i)
                 pause(0.1)
-            print("")
+            '''
+            print("4.查看所有角色HP")
             pause(0.3)
             self.player_current_pokemon_num = -1
-            self.player_current_pokemon_num = int(input("输入数字选择你的宝可梦："))
+            self.player_current_pokemon_num = int(input("输入数字决定你的选择："))
+            while self.player_current_pokemon_num == 4:
+                pause(0.3)
+                print("======你自己======")
+                show(self.player_pokemon,self.player_dizzy,self.player_paralyzed)
+                pause(0.3)
+                print("======对方========")
+                show(self.computere_pokemon,self.computere_dizzy,self.computere_paralyzed)
+                self.player_current_pokemon_num = int(input("输入数字决定你的选择："))
             self.player_current_pokemon = self.player_pokemon[self.player_current_pokemon_num - 1]
-            while self.player_current_pokemon_num in self.player_dizzy:
+            while self.player_current_pokemon_num - 1 in self.player_dizzy:
                 pause(0.1)
                 print(f"你的 {self.player_current_pokemon.chinese} 目前已晕厥！")
                 pause(0.2)
                 self.player_current_pokemon_num = int(input("请输入数字重新选择你的宝可梦："))
                 self.player_current_pokemon = self.player_pokemon[self.player_current_pokemon_num - 1]
-            while self.player_current_pokemon_num in self.player_paralyzed:
+            while self.player_current_pokemon_num - 1 in self.player_paralyzed:
                 pause(0.1)
                 print(f"你的 {self.player_current_pokemon.chinese} 目前已麻痹！")
                 pause(0.2)
@@ -338,6 +455,20 @@ class Game():
                     i.hp = i.hp - int(0.1 * i.hp)
                     
             pause(0.5)
+            #玩家技能
+            #草被动
+            for i in self.player_pokemon:
+                if i.element_id == 1:
+                    i.passive_skill()
+            player_skill(self)
+            #电被动
+            if self.computere_current_pokemon.element_id == 4:
+                if self.computere_current_pokemon.is_act:
+                    computere_skill(self)
+                    self.computere_current_pokemon.is_act = 0
+
+            pause(3)
+            '''
             print(f"你的 {self.player_current_pokemon.chinese} 的技能：")
             pause(0.2)
             print(f"1.{SKILL[self.player_current_pokemon.name][0]}")
@@ -356,7 +487,31 @@ class Game():
                 break
             print("")
             pause(0.2)
+            '''
             print("=====对方回合=====")
+            #人机技能
+            #草被动
+            for i in self.computere_pokemon:
+                if i.element_id == 1:
+                    i.passive_skill()
+            computere_skill(self)
+            #电被动
+            if self.player_current_pokemon.element_id == 4:
+                if self.player_current_pokemon.is_act:
+                    player_skill(self)
+            pause(3)
+            #护盾扣除
+            for i in self.computere_pokemon:
+                if i.defend_rate != 0:
+                    i.defend_rate = max(0,i.defend_rate - 30)
+                    print(f"电脑的{i.chinese} 护盾失去 30%")
+                    print(f"目前护盾{i.defend_rate}")
+            for i in self.player_pokemon:
+                if i.defend_rate != 0:
+                    i.defend_rate = max(0,i.defend_rate - 30)
+                    print(f"你的{i.chinese} 护盾失去 30%")
+                    print(f"目前护盾{i.defend_rate}")
+            '''
             pause(0.1)
             print(f"{self.computere_current_pokemon.chinese} 使用了 {SKILL[self.computere_current_pokemon.name][self.skill_choice - 1]}！")
             self.computere_current_pokemon.skill_act(random.randint(1,2),self.player_current_pokemon)
@@ -364,8 +519,25 @@ class Game():
             print("")
             pause(0.1)
             print("")
-            if is_end(self):
-                break
+            '''
+
+        if is_end(self) == 'player':
+            pause(0.1)
+            print("恭喜你胜利")
+            pause(0.2)
+            print("你的阵营如下：")
+            show(self.player_pokemon,self.player_dizzy,self.player_paralyzed)
+        elif is_end(self) == 'computer':
+            pause(0.1)
+            print("可惜了，你的三个宝可梦倒下了")
+            pause(0.2)
+            print("对方的阵营如下：")
+            show(self.computere_pokemon,self.computere_dizzy,self.computere_paralyzed)
+        else:
+            print("平局了？？？")
+            show(self.player_pokemon,self.player_dizzy,self.player_paralyzed)
+            show(self.computere_pokemon,self.computere_dizzy,self.computere_paralyzed)
+
 
 SKILL = {"PikaChu":['十万伏特','电光一闪'],
     "Bulbasaur":['种子炸弹','寄生种子'],
