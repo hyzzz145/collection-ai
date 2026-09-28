@@ -292,5 +292,3 @@ GIFT_EFFECTS = {
 if __name__ == "__main__": 
     game = Game()
     game.start()
-
-game.start()
