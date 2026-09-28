@@ -45,7 +45,7 @@ def pause_battle(t:float):
         pause(t/5)
         print(".",end="  ")
     print("")
-pause_t = 0.8
+pause_t = 0.3
         
 
 #宝可梦类
@@ -128,7 +128,7 @@ class Pokemon():
             print("属性伤害减半")
             attack /= 2
         attack = max(0,attack - op_character.defend_value)
-        if self.defend_rate:
+        if op_character.defend_rate:
             pause(pause_t)
             print(f"护盾吸收 {op_character.defend_rate}%")
             attack *= (100 - op_character.defend_rate)
