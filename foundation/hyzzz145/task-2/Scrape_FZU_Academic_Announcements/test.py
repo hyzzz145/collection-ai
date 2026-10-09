@@ -1,10 +1,10 @@
-import os
-import csv
-# from scrape_copy import scatch,notice_request
-import requests
+# import os
+# import csv
+# # from scrape_copy import scatch,notice_request
+# import requests
 
-##进入程序文件夹
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+# ##进入程序文件夹
+# os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 # #打开csv，以及初始化
@@ -21,12 +21,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # writer.writerow(["nihao"])
 
 # f.close()
+a = [1,2,3,4,5,67]
+for i in range(5,2,-1):
+    print(i)
 
-a = ['\t附件名：附件1.福州大学国家级优秀教材培育项目立项申报书.docx']
-print(str(a))
-print("附件名" in str(a))
-with open("test.txt","w") as f:
-    f.write(a)
-
-print(a)
-print("附件名" in a)
