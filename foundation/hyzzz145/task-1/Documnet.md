@@ -29,6 +29,8 @@ list.extend()
 list.insert(0,1)
 #移除并返回索引处元素
 list.pop()
+#移除某元素
+list.remove()
 ```
 
 ## Lambda
@@ -48,7 +50,7 @@ b = list(fiter(lambda x,x%2 == 0),[1,2,3,4,5,6])
 c = reduce(lambda x,y:x*y,[1,2,3,4,5,6])
 ```
 ## dict
-- dict.keys() 生成的是 dict_keys 类型，而非列表
+- dict.keys() 生成的是 dict_keys 类型，而非列表，要让它成为列表，需要 list() 。
 
 ## 正则表达式
 - 使用正则表达式需要引用 re 库
@@ -75,3 +77,5 @@ def greet(name: str, age: int) -> str:
 ```
 ## 生成器
 - 用于节省内存
+
+## 装饰器
