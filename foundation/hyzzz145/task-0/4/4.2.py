@@ -6,4 +6,4 @@ for i in tree_high:
     if int(i) <= tao_high + chair_high:
         idx += 1
 print(idx)
-    
+    #

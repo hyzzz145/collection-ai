@@ -18,6 +18,8 @@ text.replace("h","j")
 text.split(" ")
 #检查开头或索引的字符串内容返回bool值
 text.startswith('...',index)
+#查找是第几个字符
+text.find('content')
 ```
 
 ## List

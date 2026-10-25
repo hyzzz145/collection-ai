@@ -259,3 +259,11 @@ x = np.arange(-5,5,0.05)
 y = np.random.normal(0,1,len(x))
 plt.plot(x,y)
 plt.show()
+
+
+class a():
+    def __new__(cls,a,b,c):
+        pass
+    def __init__(self,a,b,c):
+        pass
+m = a(1,2,3)

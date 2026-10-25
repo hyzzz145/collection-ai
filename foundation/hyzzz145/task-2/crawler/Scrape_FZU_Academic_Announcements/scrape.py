@@ -1,4 +1,4 @@
-import requests
+import requests,itertools
 import csv
 import re
 from bs4 import BeautifulSoup 
@@ -81,13 +81,18 @@ def scatch(resp_notice,url_id):
                     print("data1 已写入")
                     writer.writerow(["附件信息：  "])
                 #data 2 是否存在
-                if next(data_2,None) == None:
+                #peek 用于储存消耗的东西
+                peek = next(data_2,None)
+                if peek == None:
                     print("false")
                     writer.writerow(["\t无"])
-                    writer.writerow([" "])
                 else:
+                    print(data_2)
+                    data_3 = itertools.chain([peek],data_2)
+                    print(data_3)
                     #遍历data 2
-                    for p in data_2:
+                    for p in data_3:
+                        print(p.group)
                         ex_file_name = p.group("ex_file_name")
                         ex_file_link = "https://jwch.fzu.edu.cn/" + p.group("ex_file_link")
                         #爬取下载次数
@@ -97,9 +102,8 @@ def scatch(resp_notice,url_id):
                         writer.writerow([f"\t附件名：{ex_file_name}"])
                         writer.writerow([f"\t附件链接：{ex_file_link}"])
                         writer.writerow([f"\t已下载{dlnum}次"])
-                        writer.writerow([" "])
                         print("data2已写入")
-                        print("")
+                writer.writerow([" "])
             else:
                 print("异常")
     #防止中途网络终端
@@ -160,10 +164,6 @@ def run_code():
         
 
         #附件
-
-    
-
-
 if __name__ == '__main__':
     #询问是否从上次为保存的继续
     is_continue = False

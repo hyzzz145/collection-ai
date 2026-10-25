@@ -329,11 +329,7 @@
 
 ## 10 月 18 日
 
-- pandas（made by chatgpt）
-  - 基础
-    - `import pandas as pd`：导入 Pandas，并简写为 `pd`
-    - `print(value)`：输出内容
-      - `print("hello world")`
+- pandas（*made by chatgpt*）
   - `Series`
     - `Series(data, index)`：创建带索引的一维数据
       - `pd.Series({"a": 1, "b": 2})`：字典键作为索引，值作为数据
@@ -358,9 +354,9 @@
       - `df.iloc[::-1, :]`：反转行顺序
   - 读取与概览
     - `read_csv(path, index_col=0)`：读取 CSV；将第 1 列设为索引
-      - `pd.read_csv("data.csv", index_col=0)`
+      - `pd.read_csv("data.csv", index_col=0)`：行索引是第一列
     - `head(n)`：查看前 `n` 行，默认 5 行
-    - `describe()`：查看数值列的描述性统计
+    - `describe()`：查看数值列的描述性统计，文本列自动排除，除非加 `include = 'all'`
   - 缺失值
     - `isna()` / `isnull()`：检测缺失值
     - `dropna(axis=0)`：删除含缺失值的行；`axis=1` 删除含缺失值的列
@@ -376,3 +372,127 @@
       - `pd.cut(df["年龄"], [0, 25, 120])`：分为 `(0, 25]` 和 `(25, 120]`
     - `qcut(values, q)`：按分位数分箱，各箱数据量大致相等
       - `pd.qcut(df["费用"], 2)`：按中位数分为两组
+
+## 10 月 19 日
+
+- `pandas`
+  - `df`
+    - `df.values`可以把数据转为二维数组
+    - `df.set_index('')`设置新索引
+    - `df[].rank(ascemding,method)`返回从大到小的位次 series，且同值同排名，且类型为 float64
+    - `index(index)`获得索引名称
+    - `values(index)`获得值
+  - `series`
+    - `.astype()`转类型
+- `numpy`
+  - `sum(array,axis=)`axis 为 1 是横着加；为 0 是竖着加
+  - `argsort(array)`把数组从小到大标号返回索引数组
+  - `empty(len,dtype)`创造一个 len 长度的 dtype 类型空数组
+  - `argmax(array)`最大值的索引
+- 安装了 Jupyter Notebook
+  - 启动 `jupyter notebook`
+  - Shift + Enter 运行单元格
+  - Esc + A 上方插入新单元格
+  - Esc + B 下方插入新单元格
+  - Esc + M 切换为 Markdown 格式
+  - Ctrl + Enter 运行当前单元格
+  - shift + enter 运行单元格并跳转下一个
+- itertool
+  - `pairwise(iter)`当使用 for 循环时，返回类似 （1，2）（2，3）（3，4）...
+- 在数据分析发现的几个问题
+  - 写入 csv 时，输入''空字符会在csv中带引号
+  - writerrows 要写二维数组
+
+## 10 月 20 日
+
+- `itertools`
+  - `chain(list,iter)`：把list里的元素塞到iter头部
+  
+## 10 月 21 日
+
+- `pd.dataframe().set_index('',**inplace**)`：一般来说，如果不加 inplace，只支持放回修改的新 df，加了后，直接对原 df 进行修改
+- `pd.df.to_csv('name.csv',float_format='%.2f')`：即可导入csv,float_format 可以设置保留几位小数
+- 在 `pd.df`里，如果已经`set_index`了，不能直接 df[索引列名]
+
+## 10 月 22 日
+
+- 如果在使用 `pd.df.to_csv` 时发现有空行现象，记得在 str 数据里加 `.stripe()` 方法
+- `pd.df.to_csv` 的 `mode = 'a'` 表示写入模式
+- 正则表达式可以 `search('()',txet).group(1)`找到匹配对象
+- 准备尝试用英语写注释
+- 算了，拿英语写太累了
+- `matplotlib.pyplot`(哎，这种笔记还是得自己写)
+  - 无法使用中文打以下代码
+
+  ```python
+  plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
+  plt.rcParams['axes.unicode_minus'] = False
+  ```
+
+  - `figure(figsize(n*n),dpi=)`创建图像,`figsize`是图片大小，`dpi`是清晰度
+  - `title('',fontszie='')`设置标题
+  - `plot(x,y)`：其中 x 和 y 是数组或列表，x y 一一对应、
+  - `axes()`：用于 oop 的建造图表
+    - `plot(x,y)`；同上
+  - `show()`：显示
+  - `subplot(3,1,1)`：建 3 行 1 列的图表，使用 plot 在第一个图绘制
+    - 若使用 `axes` 代码如下
+
+    ```python
+    # # 面向对象方式
+    # Fig2, ax2 = plt.subplots(3)     # 创建一个包含3个子图的画布，ax2 是子图数组
+    # ax2[0].plot(x,y1)               # 在第1个子图上绘制 x-y1 折线图
+    # ax2[1].plot(x,y2)               # 在第2个子图上绘制 x-y2 折线图
+    # ax2[2].plot(x,y3)               # 在第3个子图上绘制 x-y3 折线图
+    # x = np.linspace(0, 10, 50)
+    # y = np.sin(x)
+    ```
+  
+  - 图分类
+    - `plot(x,y)`：线型图
+    - `pie(value,lable,autopct=lambda p:express)`：饼图，若 `autopct='%1.2f%%'` 则表示显示一个浮点数，保留 2 位小数，字宽1；
+    - `scatter(x,y)`：散点图
+    - `bar(x,y)`：条形图
+    - `stem(x,y)`：杆图
+    - `step(x,y)`：阶梯图
+  - `bar_label(bar,padding=3,fmt='%.2f')`对柱形图上显示数字，`padding`代表距顶高度
+- `np`
+  - `linespace(0,10,50)`：在 0，10 上均匀分布50 个数
+- `{1.100:g}` 表示抹去多余的 0，返回 1.1
+
+## 10 月 23 日
+
+- `numpy`
+  - `array`
+    - `reshape(a,b)`返回一个 a 行 b 列的矩阵
+    - `astype(type)`返回一个转类型的数组
+    - `T`转置二维数组；一维数组转置后仍是一维
+    - `fliplr(arr)`：左右翻转二维数组
+    - `flipud(arr)`：上下翻转；一维数组也可使用
+    - `copy()`：创建独立副本；直接赋值会让变量共享同一个数组
+    - `size`获得 size
+    - `transpose(1,0,2)`让原来的维度重新排列
+  - `zero(n)`：创造 n 个 0 的数组，其中类型为浮点数。n 可以是 (2,3)，也可以是一个数
+  - `arange(stop)` / `arange(start, stop, step)`：按步长生成连续数值，包含 `start`，不包含 `stop`。
+  - `random`
+    - `random(size)`生成 `[0, 1)` 范围内的随机小数。
+    - `randint(low,high,size)`生成随机整数，包含 `low`，不包含 `high`。
+    - `randn(size)`均值为0 标准差为 1 的正态分布
+    - `normal(average,标准差,size)`状态发布
+  - `concatenate((a, b), axis=0)`拼贴两个数组，axis=0 是按照上下拼贴，axis = 1 是左右拼贴
+  - `split(array,[a,b....])`切割数组，返回切割后的列表
+  - `abs(array)`
+  - `sin(array)`
+  - `exp(array)`
+  - `log(array)`
+  - `max`、`sum`、`prod`、`mean`、`std`：最大值、求和、求积、均值、标准差
+  - `argmax(array)`：返回数组最大值的索引，不过是展开后一维的
+  - `unravel_index(idx,size)`针对一位索引，转为二维索引(row,column)
+  - `newaxis` 用来给数组增加一个长度为 1 的维度，常用于把一维数组变成行向量或列向量
+  - `any(array condition,axis)`返回一个降维 bool 数组来表示符合条件的部分，这里的 aixs 指沿着某个维度
+  - `where(bool 掩码)`返回索引
+  - `stack([array1,array2],axis=)`增维拼贴
+  - `repeat(array,n,axis)`返回把 axis 维重复 n 次
+  - `clip(a,min,max)`把数组 a 限制在  min 到 max
+  - `swapaxes(array,0,1)`返回的让 1 维和 2 维换位置的数组
+  
