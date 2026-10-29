@@ -12,18 +12,15 @@ head = {
     "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0"
 }
 #初始化
-idx = 0
-end = 150
-run = 1
+idx = 0     #用于记录抓取的通知数
+start = 215 #开始的页数
+end = 150   #为结束的页数
+run = True  #若为 false 则在抓取过程中，请求出现异常，需要停止抓取
 ##进入程序文件夹
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-
-
-
-
-#定义爬取函数
-def scatch(resp_notice,url_id):
+#定义爬取函数（也有写入csv功能）
+def scatch(resp_notice:requests.Response,url_id:str)->None:
     global idx
     global run,writer,f
     #检验是否正常运行
@@ -32,38 +29,44 @@ def scatch(resp_notice,url_id):
         resp_notice.encoding = resp_notice.apparent_encoding
         notice_text = resp_notice.text
         #获取正文链接
-        link_re = re.compile(r'<a href=".*?(?P<link>info.*?)".*?</a>',re.S)
-        link_context = link_re.finditer(notice_text)
-        #爬取data1的正则
+        link_re = re.compile(r'<a href=".*?(?P<link>info.*?)".*?</a>',re.S)     #获得链接的正则表达式
+        link_context = link_re.finditer(notice_text)    #获得通知标题的正则表达式
+        #爬取data1的正则|data1是指非附件部分
+        ##part是部门，title是标题，date是日期
         context_re = re.compile(r'<a href="../../jxtz/.*?\.htm">(?P<part>.*?)</a>.*?'
                             r'<h4 align="center">(?P<title>.*?)</h4>.*?'
                             r'<span class="xl_sj_icon">.*?(?P<date>[\d\-]+)</span>.*?'
                             ,re.S)
         #附件正则
-        context_re_2 = re.compile(r'<a href="(?P<ex_file_link>/system/_content/download.jsp\?urltype=news.DownloadAttachUrl.owner=1744984858&wbfileid=(?P<ex_file_dlnum_id>.*?))" target="_blank">(?P<ex_file_name>.*?)</a>.*?',re.S)
+        context_re_2 = re.compile(r'''<a href="(?P<ex_file_link>/system/_content/download.jsp\?urltype=news
+        .DownloadAttachUrl.owner=1744984858&wbfileid=(?P<ex_file_dlnum_id>.*?))" target="_blank">(?P<ex_file_name>.*?)
+        </a>.*?''',re.S)
         #遍历通知页正文链接（20个）
         for i in link_context:
             #记录第几个文件
             idx += 1
             print(f"第{idx}个文件")
-            #内容筛选
+            #合成正确的通知正文链接
             url_context = "https://jwch.fzu.edu.cn/" + str(i.group("link"))
             #检查超时
             try:
+                #请求正文的网页
                 resp_context = requests.get(url_context,headers=head,timeout=3)
             except (requests.Timeout,requests.ConnectionError) as e:
                 with open("log.txt",'w') as log:
                     log.write(url_id)
                 print(f"网路中断;{e}")
-                run = 0
-
+                run = False
             #是否正常
             if resp_context.status_code == 200:
+                #解决编码网页
                 resp_context.encoding = resp_context.apparent_encoding
+                #context_txt是正文html
                 context_text = resp_context.text
                 data = context_re.finditer(context_text)
                 data_2 = context_re_2.finditer(context_text)
                 #data 1
+                #数据遍历，但一般只有一个 data1 结果
                 for o in data:
                     part = o.group("part")
                     title = o.group("title")
@@ -76,12 +79,11 @@ def scatch(resp_notice,url_id):
                     # soup = BeautifulSoup(context_text,'lxml')
                     # content = soup.find('div',class_ = 'xl_main').get_text(strip=True)
                     # writer.writerow([f"正文：{content}"])
-
-
                     print("data1 已写入")
                     writer.writerow(["附件信息：  "])
                 #data 2 是否存在
                 #peek 用于储存消耗的东西
+                ##如果peek是None，说明data_2里面没东西
                 peek = next(data_2,None)
                 if peek == None:
                     print("false")
@@ -106,16 +108,17 @@ def scatch(resp_notice,url_id):
                 writer.writerow([" "])
             else:
                 print("异常")
+                writer.writerow(["\n异常信息\n"])
     #防止中途网络终端
     else:
         with open("log.txt",'w') as log:
             log.write(url_id)
         print("连接异常")
-        run = 0
+        run = False
         
 
 #定义通知页请求函数
-def notice_request(url_id):
+def notice_request(url_id:str) -> requests.Response:
     global run
     with open("log.txt",'w') as log:
         log.write(url_id)
@@ -128,7 +131,7 @@ def notice_request(url_id):
         with open("log.txt",'w') as log:
             log.write(url_id)
         print(f"网路中断;{e}")
-        run = 0
+        run = False
     return resp_notice
    
 def run_code():
@@ -155,7 +158,7 @@ def run_code():
             else:
                 for url_id in [f"/{n}" for n in range(int(re.search(r'\d+',url_id_log).group())-1, end, -1)]:
                     scatch(notice_request(url_id),url_id)
-        run = 0
+        run = False
         f.close()
 
 
